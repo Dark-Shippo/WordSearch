@@ -3,6 +3,7 @@
     using System.IO;
     using System.Net.Sockets;
     using System.Reflection.Metadata.Ecma335;
+    using System.Security.Cryptography.X509Certificates;
     using System.Text.RegularExpressions;
     using System.Threading;
     internal class Program
@@ -64,8 +65,7 @@
             int foundWords = 0;
             string[] randomLetter = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
 
-            int chosenWordIndex = rnd.Next(eightChosenWords.Length);
-            string chosenWord = eightChosenWords[chosenWordIndex];
+            string chosenWord;
             int randomLetterIndex = rnd.Next(randomLetter.Length);
 
             string[] WordSearchBoard =
@@ -92,15 +92,25 @@
                     "....................",
                 };
 
-            int randomRow = 2;//rnd.Next(WordSearchBoard.Length);
+            int randomRow = rnd.Next(WordSearchBoard.Length);
             string chosenRow = WordSearchBoard[randomRow];
             int randomColumn = rnd.Next(chosenRow.Length);
 
-            // row length + (Column + word length)
+            for (int i = 0; i < eightChosenWords.Length; i++)
+            {
+                chosenWord = eightChosenWords[i];
 
-            HorizontalPlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard, eightChosenWords);
-            VerticalPlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard);
+                int VertOrHoriz = rnd.Next(1, 2);
 
+                if (VertOrHoriz == 1)
+                {
+                    HorizontalPlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard, eightChosenWords);
+                }
+                else if (VertOrHoriz == 2)
+                {
+                    VerticalPlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard);
+                }
+            }
 
 
             foreach (string row in WordSearchBoard)
@@ -114,7 +124,7 @@
 
 
                 Console.WriteLine("\n" + "Find these words!");
-                foreach (var word in eightChosenWords)
+                foreach (string word in eightChosenWords)
                 {
                     Console.WriteLine(word.ToString());
                 }
@@ -132,21 +142,58 @@
 
             static void VerticalPlacements(int randomRow, int randomColumn, string chosenRow, string chosenWord, string[] WordSearchBoard)
             {
-                if ((randomRow + chosenWord.Length) < WordSearchBoard.Length)
+                Random random = new Random();
+                int vertChoice = random.Next(0, 1);
+                // outputs the word vertically in a forward direction
+                if (vertChoice == 0)
                 {
-                    for (int i = 0; i < chosenWord.Length; i++)
+                    if ((randomRow + chosenWord.Length) < WordSearchBoard.Length)
                     {
-                        if (chosenRow[randomColumn] == '.')
+                        for (int i = 0; i < chosenWord.Length; i++)
                         {
-                            WordSearchBoard[randomRow + i] = WordSearchBoard[randomRow].Substring(0, randomColumn) + chosenWord.Substring(i, 1) + WordSearchBoard[randomRow].Substring(randomColumn + 1);
+                            if (chosenRow[randomColumn] == '.')
+                            {
+                                WordSearchBoard[randomRow + i] = WordSearchBoard[randomRow].Substring(0, randomColumn) + chosenWord.Substring(i, 1) + WordSearchBoard[randomRow].Substring(randomColumn + 1);
+                            }
                         }
+                    }
+                    else if (!((randomRow + chosenWord.Length) < WordSearchBoard.Length))
+                    {
+                        randomRow = random.Next(WordSearchBoard.Length);
+                        chosenRow = WordSearchBoard[randomRow];
+                        randomColumn = random.Next(chosenRow.Length);
+                        VerticalPlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard);
+                    }
+                }
+                // outputs the word vertically in a reverse direction
+                if (vertChoice == 1)
+                {
+                    if ((randomRow + chosenWord.Length) < WordSearchBoard.Length)
+                    {
+                        for (int i = 0; i < chosenWord.Length; i++)
+                        {
+                            if (chosenRow[randomColumn] == '.')
+                            {
+                                WordSearchBoard[randomRow + i] = WordSearchBoard[randomRow].Substring(0, randomColumn) + chosenWord.Substring(chosenWord.Length - 1 - i, 1) + WordSearchBoard[randomRow].Substring(randomColumn + 1);
+                            }
+                        }
+                    }
+                    else if (!((randomRow + chosenWord.Length) < WordSearchBoard.Length))
+                    {
+                        randomRow = random.Next(WordSearchBoard.Length);
+                        chosenRow = WordSearchBoard[randomRow];
+                        randomColumn = random.Next(chosenRow.Length);
+                        VerticalPlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard);
                     }
                 }
             }
 
-            static void HorizontalPlacements(int randomRow, int randomColumn, string chosenRow, string chosenWord, string[] WordSearchBoard, string[] eightChosenWords) 
+            static void HorizontalPlacements(int randomRow, int randomColumn, string chosenRow, string chosenWord, string[] WordSearchBoard, string[] eightChosenWords)
             {
-                for (int i = 0; i < eightChosenWords.Length; i++)
+                Random random = new Random();
+                int horizChoice = random.Next(0, 1);
+                // outputs the word horizontally in a forward direction
+                if (horizChoice == 0)
                 {
                     if ((randomColumn + chosenWord.Length) < WordSearchBoard[randomRow].Length)
                     {
@@ -155,8 +202,44 @@
                             WordSearchBoard[randomRow] = WordSearchBoard[randomRow].Substring(0, randomColumn) + chosenWord + WordSearchBoard[randomRow].Substring(randomColumn + chosenWord.Length);
                         }
                     }
+                    else if (!((randomColumn + chosenWord.Length) < WordSearchBoard[randomRow].Length))
+                    {
+                        randomRow = random.Next(WordSearchBoard.Length);
+                        chosenRow = WordSearchBoard[randomRow];
+                        randomColumn = random.Next(chosenRow.Length);
+                        HorizontalPlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard, eightChosenWords);
+                    }
+                }
+
+                // outputs the word horizontally in a reverse direction
+                if (horizChoice == 1)
+                {
+                    chosenWord = ReverseWord(chosenWord);
+                    if ((randomColumn + chosenWord.Length) < WordSearchBoard[randomRow].Length)
+                    {
+                        if (chosenRow[randomColumn] == '.')
+                        {
+                            WordSearchBoard[randomRow] = WordSearchBoard[randomRow].Substring(0, randomColumn) + chosenWord + WordSearchBoard[randomRow].Substring(randomColumn + chosenWord.Length);
+                        }
+                    }
+                    else if (!((randomColumn + chosenWord.Length) < WordSearchBoard[randomRow].Length))
+                    {
+                        randomRow = random.Next(WordSearchBoard.Length);
+                        chosenRow = WordSearchBoard[randomRow];
+                        randomColumn = random.Next(chosenRow.Length);
+                        HorizontalPlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard, eightChosenWords);
+                    }
                 }
             }
         }
+
+        // Converts the input word into a char array then using the array.reverse it flips the word and outputs the result.
+        public static string ReverseWord(string word)
+        {
+            char[] reverseWord = word.ToCharArray();
+            Array.Reverse(reverseWord);
+            return new string(reverseWord);
+        }
+
     }
 }
