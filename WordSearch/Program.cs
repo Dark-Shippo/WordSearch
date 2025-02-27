@@ -134,8 +134,9 @@
                     continue;
                 }
 
-                bool isValidInput = int.TryParse(input[0], out int row) && int.TryParse(input[1], out int col);
-                if (!isValidInput || row < 0 || row >= WordSearchBoard.Length || col < 0 || col >= WordSearchBoard[0].Length)
+                bool isValidInputRow = int.TryParse(input[0], out int row); 
+                bool isValidInputCol = int.TryParse(input[1], out int col);
+                if (!isValidInputRow || row < 0 || row >= WordSearchBoard.Length || !isValidInputCol || col < 0 || col >= WordSearchBoard[0].Length)
                 {
                     Console.WriteLine("Invalid coordinates! Please enter a valid row and column.");
                     continue;
