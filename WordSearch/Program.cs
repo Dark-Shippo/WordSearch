@@ -331,7 +331,67 @@
             }
         }
 
-        
+        static string CheckForWord(int row, int col, string[] words, string[] board)
+        {
+            // Logic to check if a word starts from the given coordinates (row, col)
+            foreach (string word in words)
+            {
+                if (CheckWordAtCoordinates(word, row, col, board))
+                {
+                    return word;
+                }
+            }
+            return string.Empty;
+        }
+
+        static bool CheckWordAtCoordinates(string word, int row, int col, string[] board)
+        {
+            // Check horizontally
+            if (col + word.Length <= board[row].Length)
+            {
+                bool match = true;
+                for (int i = 0; i < word.Length; i++)
+                {
+                    if (board[row][col + i] != word[i])
+                    {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) return true;
+            }
+
+            // Check vertically
+            if (row + word.Length <= board.Length)
+            {
+                bool match = true;
+                for (int i = 0; i < word.Length; i++)
+                {
+                    if (board[row + i][col] != word[i])
+                    {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) return true;
+            }
+
+            return false;
+        }
+
+        static void MarkWordAsFound(int row, int col, string word, string[] board)
+        {
+            // Mark the word on the board in red
+            Console.ForegroundColor = ConsoleColor.Red;
+
+            for (int i = 0; i < word.Length; i++)
+            {
+                board[row] = board[row].Substring(0, col + i) + word[i] + board[row].Substring(col + i + 1);
+            }
+
+            Console.ResetColor();
+            PrintBoard(board);
+        }
 
         static void PrintBoard(string[] board)
         {
