@@ -433,15 +433,13 @@
 
         static void MarkWordAsFound(int row, int col, string word, string[] board)
         {
-            // Mark the word on the board in red
-            Console.ForegroundColor = ConsoleColor.Red;
+            // Convert found word into @ signs
 
             for (int i = 0; i < word.Length; i++)
             {
-                board[row] = board[row].Substring(0, col + i) + word[i] + board[row].Substring(col + i + 1);
+                board[row] = board[row].Substring(0, col + i) + "@" + board[row].Substring(col + i + 1);
             }
 
-            Console.ResetColor();
             PrintBoard(board);
         }
 
