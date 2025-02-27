@@ -115,7 +115,58 @@
 
             PrintBoard(WordSearchBoard);
 
-            
+            while (isPlaying)
+            {
+                Console.WriteLine("\n" + "Find these words!");
+                foreach (string word in eightChosenWords)
+                {
+                    Console.WriteLine(word.ToString());
+                }
+
+                Console.WriteLine("Please type the Row number (0-19) and Column number (0-19) where you think the word is located.");
+                Console.WriteLine("Example: 3 4 for Row 3, Column 4.");
+
+                string[] input = Console.ReadLine()?.Split(' ');
+
+                if (input == null || input.Length != 2)
+                {
+                    Console.WriteLine("Invalid input! Please provide two numbers separated by a space.");
+                    continue;
+                }
+
+                bool isValidInput = int.TryParse(input[0], out int row) && int.TryParse(input[1], out int col);
+                if (!isValidInput || row < 0 || row >= WordSearchBoard.Length || col < 0 || col >= WordSearchBoard[0].Length)
+                {
+                    Console.WriteLine("Invalid coordinates! Please enter a valid row and column.");
+                    continue;
+                }
+
+                string foundWord = CheckForWord(row, col, eightChosenWords, WordSearchBoard);
+                if (!string.IsNullOrEmpty(foundWord))
+                {
+                    foundWords++;
+                    MarkWordAsFound(row, col, foundWord, WordSearchBoard);
+                    Console.WriteLine($"You found the word: {foundWord}");
+                }
+                else
+                {
+                    Console.WriteLine("No word found at that position. Try again.");
+                }
+
+                if (foundWords == 8)
+                {
+                    Console.WriteLine("You WIN! Press R to play again or Q to quit.");
+                    string playAgain = Console.ReadLine()?.Trim().ToLower();
+                    if (playAgain == "r")
+                    {
+                        Main(args); // Restart the game
+                    }
+                    else if (playAgain == "q")
+                    {
+                        isPlaying = false; // Exit the game
+                    }
+                }
+            }
         }
 
         // outputs the word vertically in a forward direction
