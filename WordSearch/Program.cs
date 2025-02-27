@@ -11,23 +11,36 @@
         static void Main(string[] args)
         {
             int numberOfWords = 15;
-
+            Random rnd = new Random();
             string wordsFilePath = "Words.txt";
             string[] AllWords = File.ReadAllLines(wordsFilePath);
+            bool isSelecting = true;
 
             Console.WriteLine("Select your category." + "\n" + "Guild Wars 2" + "\n" + "Rimworld" + "\n" + "Sly Cooper" + "\n" + "Ratchet And Clank" + "\n" + "Dynasty Warriors" + "\n" + "World Of Warcraft" + "\n" + "League Of Legends" + "\n" + "Soulsborne" + "\n" + "Remnant From The Ashes" + "\n" + "Marvel");
-            bool isSelecting = true;
-            string? userInput = Console.ReadLine()?.Trim().ToLower();
+            string? userInput = null;
+
             while (isSelecting)
             {
-
-
-                if (!Array.Exists(AllWords, choice => choice.Equals(userInput, StringComparison.OrdinalIgnoreCase)))
+                userInput = Console.ReadLine()?.Trim().ToLower();
+                bool isValidChoice = false;
+                foreach (string category in AllWords)
                 {
-                    Console.WriteLine("Invalid choice!." + "\n");
+                    if (category.ToLower() == userInput.ToLower())
+                    {
+                        isValidChoice = true;
+                        break;
+                    }
+                }
+                if (!isValidChoice)
+                {
+                    Console.WriteLine("Invalid choice! Please select a valid category." + "\n");
                     continue;
                 }
-                isSelecting = false;
+                else
+                {
+                    isSelecting = false;
+                    break;
+                }
             }
 
             string[][] categoriesAndWords = new string[10][];
@@ -41,7 +54,7 @@
             }
 
             string[] eightChosenWords = new string[8];
-            Random rnd = new Random();
+            
             for (int i = 0; i < categoriesAndWords.Length; i++)
             {
                 if (categoriesAndWords[i][0].ToLower() == userInput)
@@ -63,9 +76,9 @@
 
             bool isPlaying = true;
             int foundWords = 0;
-            string[] randomLetter = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
+            string[] randomLetter = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z" };
 
-            string chosenWord;
+
             int randomLetterIndex = rnd.Next(randomLetter.Length);
 
             string[] WordSearchBoard =
@@ -96,142 +109,168 @@
             string chosenRow = WordSearchBoard[randomRow];
             int randomColumn = rnd.Next(chosenRow.Length);
 
-            for (int i = 0; i < eightChosenWords.Length; i++)
+            WordPlacement(randomRow, randomColumn, chosenRow, WordSearchBoard, eightChosenWords);
+
+            RandomLetterPlacement(randomLetter, WordSearchBoard);
+
+            PrintBoard(WordSearchBoard);
+
+            
+        }
+
+        // outputs the word vertically in a forward direction
+        static void VerticalPlacements(int randomRow, int randomColumn, string chosenRow, string chosenWord, string[] WordSearchBoard)
+        {
+            Random random = new Random();
+            bool placed = false;
+            while (!placed)
             {
-                chosenWord = eightChosenWords[i];
-
-                int VertOrHoriz = rnd.Next(1, 2);
-
-                if (VertOrHoriz == 1)
+                randomRow = random.Next(WordSearchBoard.Length);
+                chosenRow = WordSearchBoard[randomRow];
+                randomColumn = random.Next(chosenRow.Length);
+                if ((randomRow + chosenWord.Length) <= WordSearchBoard.Length) // Ensure word fits
                 {
-                    HorizontalPlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard, eightChosenWords);
-                }
-                else if (VertOrHoriz == 2)
-                {
-                    VerticalPlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard);
-                }
-            }
+                    bool canPlace = true;
 
+                    for (int i = 0; i < chosenWord.Length; i++)
+                    {
+                        char currentChar = WordSearchBoard[randomRow + i][randomColumn];
 
-            foreach (string row in WordSearchBoard)
-            {
-                Console.WriteLine(row.ToString());
-            }
+                        // Ensure the space is either empty ('.') or already contains the correct letter
+                        if (currentChar != '.' && currentChar != chosenWord[i])
+                        {
+                            canPlace = false;
+                            break;
+                        }
+                    }
 
-            while (isPlaying)
-            {
-                //for (int i = 0;)
-
-
-                Console.WriteLine("\n" + "Find these words!");
-                foreach (string word in eightChosenWords)
-                {
-                    Console.WriteLine(word.ToString());
-                }
-
-                Console.WriteLine("Please type the Row number with the correct letter.");
-                int Row = Console.Read();
-                Console.WriteLine("Please type the Collumn number with the correct letter.");
-                int Col = Console.Read();
-
-                if (foundWords == 8)
-                {
-                    Console.WriteLine("You WIN! Press R to play again or Q to quit.");
-                }
-            }
-
-            static void VerticalPlacements(int randomRow, int randomColumn, string chosenRow, string chosenWord, string[] WordSearchBoard)
-            {
-                Random random = new Random();
-                int vertChoice = random.Next(0, 1);
-                // outputs the word vertically in a forward direction
-                if (vertChoice == 0)
-                {
-                    if ((randomRow + chosenWord.Length) < WordSearchBoard.Length)
+                    if (canPlace)
                     {
                         for (int i = 0; i < chosenWord.Length; i++)
                         {
-                            if (chosenRow[randomColumn] == '.')
-                            {
-                                WordSearchBoard[randomRow + i] = WordSearchBoard[randomRow].Substring(0, randomColumn) + chosenWord.Substring(i, 1) + WordSearchBoard[randomRow].Substring(randomColumn + 1);
-                            }
+                            WordSearchBoard[randomRow + i] = WordSearchBoard[randomRow + i].Substring(0, randomColumn) + chosenWord[i] + WordSearchBoard[randomRow + i].Substring(randomColumn + 1);
                         }
-                    }
-                    else if (!((randomRow + chosenWord.Length) < WordSearchBoard.Length))
-                    {
-                        randomRow = random.Next(WordSearchBoard.Length);
-                        chosenRow = WordSearchBoard[randomRow];
-                        randomColumn = random.Next(chosenRow.Length);
-                        VerticalPlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard);
-                    }
-                }
-                // outputs the word vertically in a reverse direction
-                if (vertChoice == 1)
-                {
-                    if ((randomRow + chosenWord.Length) < WordSearchBoard.Length)
-                    {
-                        for (int i = 0; i < chosenWord.Length; i++)
-                        {
-                            if (chosenRow[randomColumn] == '.')
-                            {
-                                WordSearchBoard[randomRow + i] = WordSearchBoard[randomRow].Substring(0, randomColumn) + chosenWord.Substring(chosenWord.Length - 1 - i, 1) + WordSearchBoard[randomRow].Substring(randomColumn + 1);
-                            }
-                        }
-                    }
-                    else if (!((randomRow + chosenWord.Length) < WordSearchBoard.Length))
-                    {
-                        randomRow = random.Next(WordSearchBoard.Length);
-                        chosenRow = WordSearchBoard[randomRow];
-                        randomColumn = random.Next(chosenRow.Length);
-                        VerticalPlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard);
-                    }
-                }
-            }
-
-            static void HorizontalPlacements(int randomRow, int randomColumn, string chosenRow, string chosenWord, string[] WordSearchBoard, string[] eightChosenWords)
-            {
-                Random random = new Random();
-                int horizChoice = random.Next(0, 1);
-                // outputs the word horizontally in a forward direction
-                if (horizChoice == 0)
-                {
-                    if ((randomColumn + chosenWord.Length) < WordSearchBoard[randomRow].Length)
-                    {
-                        if (chosenRow[randomColumn] == '.')
-                        {
-                            WordSearchBoard[randomRow] = WordSearchBoard[randomRow].Substring(0, randomColumn) + chosenWord + WordSearchBoard[randomRow].Substring(randomColumn + chosenWord.Length);
-                        }
-                    }
-                    else if (!((randomColumn + chosenWord.Length) < WordSearchBoard[randomRow].Length))
-                    {
-                        randomRow = random.Next(WordSearchBoard.Length);
-                        chosenRow = WordSearchBoard[randomRow];
-                        randomColumn = random.Next(chosenRow.Length);
-                        HorizontalPlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard, eightChosenWords);
-                    }
-                }
-
-                // outputs the word horizontally in a reverse direction
-                if (horizChoice == 1)
-                {
-                    chosenWord = ReverseWord(chosenWord);
-                    if ((randomColumn + chosenWord.Length) < WordSearchBoard[randomRow].Length)
-                    {
-                        if (chosenRow[randomColumn] == '.')
-                        {
-                            WordSearchBoard[randomRow] = WordSearchBoard[randomRow].Substring(0, randomColumn) + chosenWord + WordSearchBoard[randomRow].Substring(randomColumn + chosenWord.Length);
-                        }
-                    }
-                    else if (!((randomColumn + chosenWord.Length) < WordSearchBoard[randomRow].Length))
-                    {
-                        randomRow = random.Next(WordSearchBoard.Length);
-                        chosenRow = WordSearchBoard[randomRow];
-                        randomColumn = random.Next(chosenRow.Length);
-                        HorizontalPlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard, eightChosenWords);
+                        placed = true;
                     }
                 }
             }
         }
+
+        // outputs the word vertically in a reverse direction
+        static void VerticalReversePlacements(int randomRow, int randomColumn, string chosenRow, string chosenWord, string[] WordSearchBoard)
+        {
+            Random random = new Random();
+            bool placed = false;
+            chosenWord = ReverseWord(chosenWord);
+            while (!placed)
+            {
+                randomRow = random.Next(WordSearchBoard.Length);
+                chosenRow = WordSearchBoard[randomRow];
+                randomColumn = random.Next(chosenRow.Length);
+
+                if ((randomRow - chosenWord.Length + 1) >= 0) // Ensure word fits from bottom to top
+                {
+                    bool canPlace = true;
+
+                    for (int i = 0; i < chosenWord.Length; i++)
+                    {
+                        char currentChar = WordSearchBoard[randomRow - i][randomColumn];
+
+                        // Ensure the space is either empty ('.') or already contains the correct letter
+                        if (currentChar != '.' && currentChar != chosenWord[i])
+                        {
+                            canPlace = false;
+                            break;
+                        }
+                    }
+
+                    if (canPlace)
+                    {
+                        for (int i = 0; i < chosenWord.Length; i++)
+                        {
+                            
+                            WordSearchBoard[randomRow - i] = WordSearchBoard[randomRow - i].Substring(0, randomColumn) + chosenWord[i] + WordSearchBoard[randomRow - i].Substring(randomColumn + 1);
+                        }
+                        placed = true;
+                    }
+                }
+            }
+        }
+
+        // outputs the word horizontally in a forward direction
+        static void HorizontalPlacements(int randomRow, int randomColumn, string chosenRow, string chosenWord, string[] WordSearchBoard, string[] eightChosenWords)
+        {
+            Random random = new Random();
+            bool placed = false;
+            while (!placed)
+            {
+                randomRow = random.Next(WordSearchBoard.Length);
+                chosenRow = WordSearchBoard[randomRow];
+                randomColumn = random.Next(chosenRow.Length);
+                if ((randomColumn + chosenWord.Length) <= WordSearchBoard[randomRow].Length)
+                {
+                    bool canPlace = true; // Flag to check if placement is valid
+
+                    for (int i = 0; i < chosenWord.Length; i++)
+                    {
+                        char currentChar = WordSearchBoard[randomRow][randomColumn + i];
+
+                        // Check if space is either empty or matches the word's letter
+                        if (currentChar != '.' && currentChar != chosenWord[i])
+                        {
+                            canPlace = false;
+                            break;
+                        }
+                    }
+
+                    if (canPlace)
+                    {
+                        // Now, we know it's safe to place the word without overwriting
+                        WordSearchBoard[randomRow] = WordSearchBoard[randomRow].Substring(0, randomColumn) +
+                                                     chosenWord +
+                                                     WordSearchBoard[randomRow].Substring(randomColumn + chosenWord.Length);
+
+                        placed = true;
+                    }
+                }
+            }
+        }
+
+        // outputs the word horizontally in a reverse direction
+        static void HorizontalReversePlacements(int randomRow, int randomColumn, string chosenRow, string chosenWord, string[] WordSearchBoard, string[] eightChosenWords)
+        {
+            Random random = new Random();
+            bool placed = false;
+            while (!placed)
+            {
+                randomRow = random.Next(WordSearchBoard.Length);
+                chosenRow = WordSearchBoard[randomRow];
+                randomColumn = random.Next(chosenRow.Length);
+                if ((randomColumn + chosenWord.Length) <= WordSearchBoard[randomRow].Length)
+                {
+                    bool canPlace = true; // Flag to check if placement is valid
+
+                    for (int i = 0; i < chosenWord.Length; i++)
+                    {
+                        char currentChar = WordSearchBoard[randomRow][randomColumn + i];
+
+                        // Check if space is either empty or matches the word's letter
+                        if (currentChar != '.' && currentChar != chosenWord[i])
+                        {
+                            canPlace = false;
+                            break;
+                        }
+                    }
+                    if (canPlace)
+                    {
+                        chosenWord = ReverseWord(chosenWord);
+                        WordSearchBoard[randomRow] = WordSearchBoard[randomRow].Substring(0, randomColumn) + chosenWord + WordSearchBoard[randomRow].Substring(randomColumn + chosenWord.Length);
+                        placed = true;
+                    }
+                }
+            }
+        }
+
 
         // Converts the input word into a char array then using the array.reverse it flips the word and outputs the result.
         public static string ReverseWord(string word)
@@ -241,5 +280,65 @@
             return new string(reverseWord);
         }
 
+        static void WordPlacement(int randomRow, int randomColumn, string chosenRow, string[] WordSearchBoard, string[] eightChosenWords)
+        {
+            Random rnd = new Random();
+            string chosenWord;
+
+            for (int i = 0; i < 8; i++)
+            {
+                chosenWord = eightChosenWords[i];
+
+                randomColumn = rnd.Next(chosenRow.Length);
+                randomRow = rnd.Next(WordSearchBoard.Length);
+
+                int VertOrHoriz = rnd.Next(0, 4);
+
+                switch (VertOrHoriz)
+                {
+                    case 0:
+                        HorizontalPlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard, eightChosenWords);
+                        break;
+                    case 1:
+                        VerticalPlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard);
+                        break;
+                    case 2:
+                        VerticalReversePlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard);
+                        break;
+                    case 3:
+                        HorizontalReversePlacements(randomRow, randomColumn, chosenRow, chosenWord, WordSearchBoard, eightChosenWords);
+                        break;
+                }
+            }
+        }
+
+        // replaces empty spaces with random letters
+        static void RandomLetterPlacement(string[] randomLetter, string[] WordSearchBoard)
+        {
+            Random rnd = new Random();
+
+            for (int i = 0; i < WordSearchBoard.Length; i++)
+            {
+                char[] rowChars = WordSearchBoard[i].ToCharArray();
+                for (int j = 0; j < rowChars.Length; j++)
+                {
+                    if (rowChars[j] == '.')
+                    {
+                        rowChars[j] = randomLetter[rnd.Next(randomLetter.Length)][0];
+                    }
+                }
+                WordSearchBoard[i] = new string(rowChars);
+            }
+        }
+
+        
+
+        static void PrintBoard(string[] board)
+        {
+            foreach (string row in board)
+            {
+                Console.WriteLine(row);
+            }
+        }
     }
 }
